@@ -1,0 +1,61 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# monitor_config.yaml — Configuration du NodeMonitor
+#
+# Chaque entrée dans monitored_nodes décrit un nœud à surveiller.
+#
+# Champs obligatoires :
+#   name         : nom ROS2 du nœud (sans namespace)
+#
+# Champs optionnels :
+#   namespace    : namespace ROS2   (défaut: /)
+#   required     : si true → alerte CRITICAL, sinon WARNING  (défaut: true)
+#   description  : texte libre pour identifier le rôle du nœud
+#   respawn      : tenter un redémarrage si le nœud disparaît  (défaut: false)
+#   respawn_cmd  : commande shell à lancer pour le respawn
+#   respawn_delay: délai en secondes avant de tenter le respawn (défaut: 2.0)
+# ─────────────────────────────────────────────────────────────────────────────
+
+monitored_nodes:
+
+ 
+  - name: camera_driver
+    namespace: /
+    required: true
+    description: "Driver caméra RealSense — critique pour la navigation"
+    respawn: true
+    respawn_cmd: "ros2 run realsense2_camera realsense2_camera_node"
+    respawn_delay: 3.0
+
+  - name: lidar_processor
+    namespace: /
+    required: true
+    description: "Traitement nuage de points LiDAR"
+    respawn: true
+    respawn_cmd: "ros2 run lidar_pkg lidar_processor_node"
+    respawn_delay: 2.0
+
+ 
+  - name: nav_controller
+    namespace: /robot1
+    required: true
+    description: "Contrôleur de navigation principal"
+    respawn: false   # redémarrage manuel préféré (état interne complexe)
+
+  - name: costmap_node
+    namespace: /robot1
+    required: true
+    description: "Costmap global et local"
+    respawn: true
+    respawn_cmd: "ros2 launch nav2_bringup costmap.launch.py"
+    respawn_delay: 5.0
+
+ 
+  - name: diagnostics_aggregator
+    namespace: /
+    required: false   # WARNING seulement si absent
+    description: "Agrégateur de diagnostics — non bloquant"
+
+  - name: rviz2
+    namespace: /
+    required: false
+    description: "Visualisation — peut être absent en production"
