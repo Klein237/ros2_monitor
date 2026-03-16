@@ -30,7 +30,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'node_monitor = monitor.monitor_node:main'
+            'node_monitor = ros2_monitor.monitor_node:main'
         ],
     },
 )

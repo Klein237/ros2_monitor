@@ -16,14 +16,12 @@
 # ─────────────────────────────────────────────────────────────────────────────
 
 monitored_nodes:
-
- 
-  - name: camera_driver
+  - name: control_4ws
     namespace: /
     required: true
-    description: "Driver caméra RealSense — critique pour la navigation"
-    respawn: true
-    respawn_cmd: "ros2 run realsense2_camera realsense2_camera_node"
+    description: "Control 04ws — interface de contrôle bas niveau"
+    respawn: false
+    respawn_cmd: "ros2 run faucon_control control_04ws.py"
     respawn_delay: 3.0
 
   - name: lidar_processor
@@ -35,17 +33,17 @@ monitored_nodes:
     respawn_delay: 2.0
 
  
-  - name: nav_controller
-    namespace: /robot1
+  - name: gz_ros_control
+    namespace: /
     required: true
-    description: "Contrôleur de navigation principal"
+    description: "Gazebo ROS Control — interface avec le simulateur"
     respawn: false   # redémarrage manuel préféré (état interne complexe)
 
-  - name: costmap_node
-    namespace: /robot1
+  - name: lidar_calibrator
+    namespace: /
     required: true
-    description: "Costmap global et local"
-    respawn: true
+    description: "Calibrateur de LiDAR — critique pour la navigation"
+    respawn: false
     respawn_cmd: "ros2 launch nav2_bringup costmap.launch.py"
     respawn_delay: 5.0
 

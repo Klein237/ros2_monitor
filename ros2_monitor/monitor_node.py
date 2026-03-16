@@ -65,7 +65,7 @@ class MonitoredNodeConfig:
 class NodeMonitor(Node):
 
     DEFAULT_POLL_INTERVAL = 3.0   # secondes entre chaque polling
-    DEFAULT_CONFIG_FILE   = ''    # chemin YAML, paramètre ROS
+    DEFAULT_CONFIG_FILE   = ''    
 
     def __init__(self):
         super().__init__('node_monitor')
@@ -73,8 +73,8 @@ class NodeMonitor(Node):
        
         self.declare_parameter('config_file',    self.DEFAULT_CONFIG_FILE)
         self.declare_parameter('poll_interval',  self.DEFAULT_POLL_INTERVAL)
-        self.declare_parameter('dry_run',        False)   # log sans respawn
-        self.declare_parameter('diag_rate',      1.0)     # Hz publication /diagnostics
+        self.declare_parameter('dry_run',        False)   
+        self.declare_parameter('diag_rate',      1.0)     
 
         config_file   = self.get_parameter('config_file').get_parameter_value().string_value
         poll_interval = self.get_parameter('poll_interval').get_parameter_value().double_value
@@ -92,27 +92,22 @@ class NodeMonitor(Node):
 
         self._alert_pub = self.create_publisher(String, '/monitor/alerts', 10)
 
-        # ── Publisher diagnostics (rqt_runtime_monitor) ─────────────────────
         # /diagnostics est le topic standard consommé par diagnostic_aggregator
         # et affiché directement par rqt_runtime_monitor.
         # Le hardware_id identifie ce monitor dans le panneau RQT.
         self._diag_pub = self.create_publisher(DiagnosticArray, '/diagnostics', 10)
         self._diag_timer = self.create_timer(1.0 / diag_rate, self._publish_diagnostics)
 
-        # ── Snapshot du graphe pour détection rapide ────────────────────────
         # On garde le dernier snapshot connu pour détecter tout changement
         # dans le timer rapide, sans avoir besoin d'un callback natif.
         self._last_graph_snapshot: frozenset[str] = frozenset()
 
-        # ── Timer rapide : détection de changement (~0.5s) ──────────────────
         # Lit uniquement get_node_names_and_namespaces() et déclenche
         # _poll_nodes() seulement si le graphe a effectivement changé.
-        # Charge CPU négligeable (pas de traitement si rien ne change).
         self.declare_parameter('fast_poll_interval', 0.5)
         fast_interval = self.get_parameter('fast_poll_interval').get_parameter_value().double_value
         self._fast_timer = self.create_timer(fast_interval, self._fast_check)
 
-        # ── Timer lent : re-sync complète (poll_interval, défaut 3s) ────────
         # Vérifie l'état complet de tous les nœuds surveillés même si
         # aucun changement de graphe n'a été détecté (filet de sécurité).
         self._poll_timer = self.create_timer(poll_interval, self._poll_nodes)
